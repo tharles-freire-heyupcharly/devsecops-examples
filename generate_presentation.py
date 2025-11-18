@@ -8,6 +8,10 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
+from PIL import Image
+
+# Aumentar limite de segurança do PIL para aceitar imagens grandes dos diagramas
+Image.MAX_IMAGE_PIXELS = None
 import os
 
 def create_presentation():
@@ -113,347 +117,419 @@ def add_iso_overview_slide(prs):
     title_frame = title_box.text_frame
     title_frame.text = "🔒 ISO 27017/27018 - Visão Geral"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(32)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(0, 51, 102)
     
     # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5.5))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """📋 ISO 27017 - Cloud Computing Security
-• Controles de segurança específicos para cloud
+    content = """ISO 27017 - Cloud Computing Security
+• Controles de segurança para cloud
 • Backup e recuperação de dados
-• Criptografia de dados em repouso e trânsito
+• Criptografia em repouso e trânsito
 • Segregação de ambientes (Dev/Prod)
 
-📋 ISO 27018 - Personal Data Protection
+ISO 27018 - Personal Data Protection
 • Proteção de dados pessoais na nuvem
-• Auditoria e rastreabilidade (CloudTrail)
-• Direito ao esquecimento (LGPD Art. 18)
-• Data residency - localização dos dados
-
-🎯 Objetivo: Conformidade automatizada via IaC"""
+• Auditoria e rastreabilidade
+• Direito ao esquecimento (LGPD)
+• Data residency - localização dos dados"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
         paragraph.font.size = Pt(20)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(12)
+        paragraph.space_after = Pt(10)
 
 def add_iso27017_backup_slide(prs):
     """Slide 3: ISO 27017 - Backup"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
     title_frame.text = "💾 ISO 27017 - Backup e Recuperação"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(0, 102, 51)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-backup/iso-27017-backup-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade:
-• Backup automatizado diário às 3AM UTC
-• Retenção mínima de 30 dias
-• Vault dedicado para compliance (aws_backup_vault)
-• Tags de rastreabilidade (Compliance, Type)
+    content = """Conceito:
+Backup automatizado de dados críticos com retenção de 30 dias
 
-🛠️ Implementação AWS:
-• AWS Backup Plan com regras de lifecycle
-• Seleção por tags (Environment=production)
-• Notificações SNS para falhas
-• IAM Role com permissões específicas
+Implementação:
+• AWS Backup Vault
+• Backup Plan (diário 3AM)
+• Seleção por tags
+• SNS Notifications
 
-📊 Validação OPA:
-• Política verifica retenção >= 30 dias
-• Valida tags obrigatórias de compliance"""
+Validação OPA:
+• Agendamento diário
+• Retenção >= 30 dias
+• Notificações ativas
+
+Benefícios:
+• RPO: 24 horas
+• RTO: < 4 horas
+• Proteção ransomware
+• Custo: $0.05/GB/mês"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
+        paragraph.font.size = Pt(16)
+        paragraph.font.name = "Arial"
+        paragraph.space_after = Pt(6)
         paragraph.font.size = Pt(20)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(8)
 
 def add_iso27017_encryption_slide(prs):
     """Slide 4: ISO 27017 - Criptografia"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
     title_frame.text = "🔐 ISO 27017 - Criptografia"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(0, 102, 51)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-criptografia/iso-27017-criptografia-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade:
-• Criptografia AES-256 para dados em repouso
-• KMS com rotação automática de chaves (365 dias)
-• Bucket versionamento habilitado
-• Logging de acesso às chaves
+    content = """Conceito:
+Criptografia de dados em repouso com chaves gerenciadas
 
-🛠️ Implementação AWS:
-• AWS KMS Customer Managed Key
-• S3 bucket encryption (SSE-KMS)
-• Versioning e lifecycle management
-• CloudWatch Logs para auditoria
+Implementação:
+• AWS KMS Key
+• S3 SSE-KMS (AES-256)
+• Rotação automática (365d)
+• Public Access Block
+• Versionamento
 
-📊 Validação OPA:
-• Verifica algoritmo AES-256
-• Valida rotação automática de chaves
-• Confirma versionamento habilitado"""
+Validação OPA:
+• Criptografia aws:kms
+• Rotação automática
+• Versionamento ativo
+
+Benefícios:
+• Proteção militar
+• Defesa em profundidade
+• LGPD/PCI DSS/HIPAA
+• Overhead < 5%"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
+        paragraph.font.size = Pt(16)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(6)
 
 def add_iso27017_segregation_slide(prs):
     """Slide 5: ISO 27017 - Segregação"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
     title_frame.text = "🏗️ ISO 27017 - Segregação de Rede"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(0, 102, 51)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-segregacao/iso-27017-segregacao-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade:
-• VPCs separadas para Dev e Prod
-• CIDR blocks não sobrepostos
-• Subnets públicas e privadas isoladas
-• Flow Logs habilitados para auditoria
+    content = """Conceito:
+Isolamento completo entre ambientes Dev e Prod
 
-🛠️ Implementação AWS:
-• VPC Dev: 10.0.0.0/16
-• VPC Prod: 10.1.0.0/16
-• Subnets em múltiplas AZs
-• VPC Flow Logs para CloudWatch
+Implementação:
+• VPC Prod (10.0.0.0/16)
+• VPC Dev (10.1.0.0/16)
+• Subnets privadas
+• Network ACLs deny
+• Flow Logs
 
-📊 Validação OPA:
-• Verifica VPCs separadas Dev/Prod
-• Valida CIDR blocks distintos
-• Confirma Flow Logs habilitados"""
+Validação OPA:
+• Tags Environment
+• CIDRs não sobrepostos
+• ACLs com deny rules
+
+Benefícios:
+• Isolamento 100%
+• Blast radius reduzido
+• 70% menos incidentes
+• SOC 2/PCI DSS"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
+        paragraph.font.size = Pt(16)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(6)
 
 def add_iso27018_audit_slide(prs):
     """Slide 6: ISO 27018 - Auditoria"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
-    title_frame.text = "📋 ISO 27018 - Auditoria e Rastreabilidade"
+    title_frame.text = "📋 ISO 27018 - Auditoria"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(32)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(102, 0, 153)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27018-auditoria/iso-27018-auditoria-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade:
-• CloudTrail multi-region habilitado
-• Retenção de logs por 7 anos (2557 dias)
-• Logs imutáveis (Object Lock)
-• Criptografia de logs (KMS)
+    content = """Conceito:
+Rastreabilidade completa de acessos a dados pessoais (LGPD Art.37)
 
-🛠️ Implementação AWS:
-• CloudTrail com bucket S3 dedicado
-• S3 Object Lock em modo Compliance
-• Lifecycle para arquivamento Glacier
-• Notificações SNS para eventos críticos
+Implementação:
+• CloudTrail multi-region
+• S3 Bucket logs (7 anos)
+• Object Lock compliance
+• CloudWatch Alarms
+• Metric Filters
 
-📊 Validação OPA:
-• Verifica multi-region habilitado
-• Valida retenção >= 2555 dias
-• Confirma Object Lock ativo"""
+Validação OPA:
+• Multi-region ativo
+• Retenção >= 2557 dias
+• Data Events capturados
+• Detecção anomalias
+
+Benefícios:
+• LGPD Art. 37 compliant
+• Não-repúdio
+• Latência < 5min
+• Custo: $2/100k eventos"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
+        paragraph.font.size = Pt(16)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(6)
 
 def add_iso27018_erasure_slide(prs):
     """Slide 7: ISO 27018 - Direito ao Esquecimento"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
     title_frame.text = "🗑️ ISO 27018 - Direito ao Esquecimento"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(32)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(102, 0, 153)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27018-esquecimento/iso-27018-esquecimento-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade (LGPD Art. 18):
-• Processamento em até 15 dias
-• Lambda function automatizada
-• Fila SQS com retenção de 14 dias
-• Registro completo de exclusões (DynamoDB)
+    content = """Conceito:
+Automação do direito ao esquecimento (LGPD Art.18, VI)
 
-🛠️ Implementação AWS:
-• Lambda Python 3.11 com timeout 300s
-• SQS para gerenciar solicitações
-• DynamoDB para histórico de exclusões
-• CloudWatch Logs (retenção 7 anos)
+Implementação:
+• Lambda timeout 300s
+• SQS retenção 14 dias
+• DynamoDB (PITR)
+• CloudWatch Logs 7 anos
 
-📊 Validação OPA:
-• Verifica SLA de processamento
-• Valida retenção de logs
-• Confirma registro de exclusões"""
+Validação OPA:
+• Lambda timeout >= 300s
+• SQS >= 14 dias
+• Logs >= 7 anos
+• DynamoDB PITR ativo
+
+Benefícios:
+• SLA < 15 dias
+• Taxa sucesso 99.5%
+• Custo: $0.001/exclusão
+• Evita multas R$50M"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
+        paragraph.font.size = Pt(16)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(6)
 
 def add_iso27018_location_slide(prs):
     """Slide 8: ISO 27018 - Localização de Dados"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
-    title_frame.text = "🌎 ISO 27018 - Data Residency (LGPD)"
+    title_frame.text = "🌎 ISO 27018 - Data Residency"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(32)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(102, 0, 153)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    # Imagem do diagrama (esquerda)
+    try:
+        img_path = "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27018-localizacao/iso-27018-localizacao-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(4.5))
+    except FileNotFoundError:
+        pass
+    
+    # Conteúdo (direita)
+    content_box = slide.shapes.add_textbox(Inches(5.2), Inches(1.3), Inches(4.3), Inches(5.2))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """✅ Requisitos de Conformidade:
-• Dados pessoais 100% em sa-east-1 (Brasil)
-• Bloqueio de replicação cross-region
-• Lifecycle com retenção 5 anos (LGPD)
-• Config Rule para validação contínua
+    content = """Conceito:
+Soberania de dados - 100% em território brasileiro
 
-🛠️ Implementação AWS:
-• S3 bucket na região sa-east-1
-• Bucket policy bloqueando replicação
-• Tags: Region=Brazil, LGPD=true
-• AWS Config para monitoramento
+Implementação:
+• S3 sa-east-1 (Brasil)
+• Bucket policy deny
+• Lifecycle 5 anos max
+• AWS Config Rule
+• Tags compliance
 
-📊 Validação OPA:
-• Verifica tags de localização
-• Confirma bloqueio de replicação
-• Valida conformidade LGPD"""
+Validação OPA:
+• Tags Region/LGPD
+• Bloqueio replicação
+• Retenção <= 5 anos
+
+Benefícios:
+• LGPD Art.11 compliant
+• Latência 15ms Brasil
+• Sem custos transfer
+• Evita multas 2% fat."""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
+        paragraph.font.size = Pt(16)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(6)
 
 def add_pipeline_overview_slide(prs):
     """Slide 9: Pipeline - Visão Geral"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.6))
     title_frame = title_box.text_frame
     title_frame.text = "🚀 Pipeline de Compliance Contínuo"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(28)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(204, 51, 0)
     
-    # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
-    content_frame = content_box.text_frame
-    content_frame.word_wrap = True
-    
-    content = """🎯 Objetivo:
-Validação automatizada de conformidade em cada commit
+    # Imagem da arquitetura do pipeline (se existir)
+    try:
+        img_path = "exemplos/6 - pipeline compliance continuo/compliance-pipeline-architecture.png"
+        slide.shapes.add_picture(img_path, Inches(0.5), Inches(1.3), width=Inches(9))
+    except FileNotFoundError:
+        # Conteúdo alternativo se não houver imagem
+        content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(8.4), Inches(5.6))
+        content_frame = content_box.text_frame
+        content_frame.word_wrap = True
+        
+        content = """Filosofia:
+• Falhas não bloqueiam visibilidade
+• Execução completa garantida
+• continue-on-error: true (todos jobs)
+• if: always() (dependências)
 
-⚙️ Tecnologias:
-• GitHub Actions (CI/CD)
-• Terraform 1.6.0 (IaC)
-• Open Policy Agent - OPA 0.58.0
-• TFSec & Checkov (SAST)
-• Infracost (Estimativa de custos)
+Arquitetura:
+• 7 estágios automatizados
+• Validações paralelas (SAST)
+• OPA Policy as Code
+• Terraform dry-run (sem AWS)
 
-📊 7 Stages Automatizados:
-1. Validação de Código
-2. Análise de Segurança (SAST)
-3. Validação de Políticas (OPA)
-4. Terraform Plan
-5. Estimativa de Custos
-6. Relatório de Compliance
-7. Deploy (desabilitado - exemplos)"""
-    
-    content_frame.text = content
-    for paragraph in content_frame.paragraphs:
-        paragraph.font.size = Pt(20)
-        paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(8)
+Diferencial:
+• Mock credentials (exemplos)
+• Visibilidade total de issues
+• Métricas agregadas ao final
+• Zero deploy em produção"""
+        
+        content_frame.text = content
+        for paragraph in content_frame.paragraphs:
+            paragraph.font.size = Pt(20)
+            paragraph.font.name = "Arial"
+            paragraph.space_after = Pt(8)
 
 def add_pipeline_stages_1_3_slide(prs):
     """Slide 10: Pipeline Stages 1-3"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.7))
     title_frame = title_box.text_frame
     title_frame.text = "📝 Pipeline - Stages 1-3"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(30)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(204, 51, 0)
     
     # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5.2))
+    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(8.4), Inches(5.6))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
@@ -485,17 +561,17 @@ def add_pipeline_stages_4_5_slide(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.7))
     title_frame = title_box.text_frame
     title_frame.text = "📋 Pipeline - Stages 4-6"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(30)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(204, 51, 0)
     
     # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5.2))
+    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(8.4), Inches(5.6))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
@@ -528,36 +604,36 @@ def add_pipeline_metrics_slide(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.7))
     title_frame = title_box.text_frame
     title_frame.text = "📈 Métricas e Benefícios"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(30)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(204, 51, 0)
     
     # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(8.4), Inches(5.6))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """⏱️ Performance:
+    content = """Performance:
 • Tempo total: ~13 minutos
 • Execução paralela de stages
 • Continue-on-error para visibilidade total
 
-✅ Conformidade:
+Conformidade:
 • 6 políticas validadas automaticamente
 • 50+ checks de segurança (Checkov/TFSec)
 • 100% rastreabilidade via artefatos
 
-🎯 Automação:
+Automação:
 • Execução em push, PR, schedule (diário 3AM)
 • Workflow dispatch para execução manual
 • Comentários automáticos em Pull Requests
 
-💰 Economia:
+Economia:
 • Mock credentials - sem custos AWS
 • Validação antes do deploy
 • Prevenção de não-conformidade"""
@@ -566,37 +642,37 @@ def add_pipeline_metrics_slide(prs):
     for paragraph in content_frame.paragraphs:
         paragraph.font.size = Pt(20)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(8)
 
 def add_conclusion_slide(prs):
     """Slide 13: Conclusão"""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     
     # Título
-    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.8))
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5), Inches(9), Inches(0.7))
     title_frame = title_box.text_frame
     title_frame.text = "✅ Conclusão"
     title_para = title_frame.paragraphs[0]
-    title_para.font.size = Pt(36)
+    title_para.font.size = Pt(30)
     title_para.font.bold = True
     title_para.font.name = "Arial"
     title_para.font.color.rgb = RGBColor(0, 102, 51)
     
     # Conteúdo
-    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(8.4), Inches(5))
+    content_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(8.4), Inches(5.6))
     content_frame = content_box.text_frame
     content_frame.word_wrap = True
     
-    content = """🎯 Principais Conquistas:
+    content = """Principais Conquistas:
 
-✅ Compliance automatizado ISO 27017/27018
-✅ Pipeline CI/CD completa com 6 stages
-✅ Policy as Code com Open Policy Agent
-✅ Segurança integrada (SAST + OPA)
-✅ Estimativa de custos automatizada
-✅ 100% rastreável e auditável
+• Compliance automatizado ISO 27017/27018
+• Pipeline CI/CD completa com 6 stages
+• Policy as Code com Open Policy Agent
+• Segurança integrada (SAST + OPA)
+• Estimativa de custos automatizada
+• 100% rastreável e auditável
 
-🚀 Próximos Passos:
+Próximos Passos:
 
 • Integrar com ambiente real AWS
 • Adicionar testes de integração
@@ -604,13 +680,13 @@ def add_conclusion_slide(prs):
 • Expandir políticas OPA
 • Dashboard de métricas
 
-📚 Recursos: github.com/tharles-freire-heyupcharly/devsecops-examples"""
+Recursos: github.com/tharles-freire-heyupcharly/devsecops-examples"""
     
     content_frame.text = content
     for paragraph in content_frame.paragraphs:
         paragraph.font.size = Pt(20)
         paragraph.font.name = "Arial"
-        paragraph.space_after = Pt(10)
+        paragraph.space_after = Pt(8)
 
 if __name__ == "__main__":
     create_presentation()
