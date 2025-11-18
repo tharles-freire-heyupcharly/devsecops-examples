@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for EC2 instance with EBS volume - IaC Demo'
+
+# Parâmetros de entrada
+Parameters:
+  KeyPairName:
+    Type: String
+    Default: my-key-pair
+    Description: Name of existing EC2 KeyPair for SSH access
+    
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type
+    
+  Environment:
+    Type: String
+    Default: Development
+    AllowedValues:
+      - Development
+      - Staging
+      - Production
+    Description: Environment name
+
+# Recursos da infraestrutura
+Resources:
+  # Security Group para a EC2
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for web server
+      SecurityGroupIngress:
+        # Regra HTTP
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP access
+        # Regra SSH
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: SSH access
+      SecurityGroupEgress:
+        # Saída - tudo liberado
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: All outbound traffic
+      Tags:
+        - Key: Name
+          Value: WebServer-SecurityGroup
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: IaC-Demo
+        - Key: Owner
+          Value: DevOps-Team
+
+  # Volume EBS
+  WebServerEBSVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: us-east-1a
+      Size: 20
+      VolumeType: gp3
+      Iops: 3000
+      Throughput: 125
+      Encrypted: true
+      Tags:
+        - Key: Name
+          Value: WebServer-Storage
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: IaC-Demo
+        - Key: Owner
+          Value: DevOps-Team
+
+  # Instância EC2
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0c7217cdde317cfec  # Ubuntu 22.04 LTS
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      AvailabilityZone: us-east-1a
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: WebServer-CloudFormation
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: IaC-Demo
+        - Key: Owner
+          Value: DevOps-Team
+
+  # Anexar volume EBS à instância
+  EBSVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: /dev/xvdf
+      InstanceId: !Ref WebServerInstance
+      VolumeId: !Ref WebServerEBSVolume
+
+# Outputs - valores de retorno
+Outputs:
+  InstanceId:
+    Description: Instance ID of the EC2 instance
+    Value: !Ref WebServerInstance
+    Export:
+      Name: !Sub "${AWS::StackName}-InstanceId"
+
+  InstancePublicIP:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt WebServerInstance.PublicIp
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicIP"
+
+  InstancePublicDNS:
+    Description: Public DNS name of the EC2 instance
+    Value: !GetAtt WebServerInstance.PublicDnsName
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicDNS"
+
+  EBSVolumeId:
+    Description: ID of the EBS volume
+    Value: !Ref WebServerEBSVolume
+    Export:
+      Name: !Sub "${AWS::StackName}-EBSVolumeId"
+
+  EBSVolumeSize:
+    Description: Size of the EBS volume in GB
+    Value: 20
+    Export:
+      Name: !Sub "${AWS::StackName}-EBSVolumeSize"
+
+  SecurityGroupId:
+    Description: ID of the Security Group
+    Value: !Ref WebServerSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-SecurityGroupId"

@@ -1,0 +1,106 @@
+// ISO 27017 - Segregação de Ambientes
+digraph {
+	nodesep=1.0 rankdir=LR ranksep=1.5 splines=ortho
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	fontname="Arial Bold" fontsize=16 label="ISO 27017 - Segregação de Ambientes
+Isolamento Completo: Dev ⊥ Prod" labelloc=t
+	subgraph cluster_prod {
+		color="#FFEBEE" fontsize=12 label="VPC Produção
+10.0.0.0/16
+[Environment=production]" style=filled
+		prod_subnet1 [label="Private Subnet 1
+10.0.1.0/24
+AZ: us-east-1a
+🔒" fillcolor="#E74C3C" fontcolor=white]
+		prod_subnet2 [label="Private Subnet 2
+10.0.2.0/24
+AZ: us-east-1b
+🔒" fillcolor="#E74C3C" fontcolor=white]
+		prod_rds [label="RDS Production
+🗄️
+Dados Críticos" fillcolor="#527FFF" fontcolor=white shape=cylinder]
+		prod_ec2 [label="EC2 Production
+💻
+Cargas de Trabalho" fillcolor="#FF9900" fontcolor=white]
+		prod_nacl [label="Network ACL
+🚫
+DENY from 10.1.0.0/16" fillcolor="#C0392B" fontcolor=white shape=hexagon]
+	}
+	subgraph cluster_dev {
+		color="#E8F5E9" fontsize=12 label="VPC Desenvolvimento
+10.1.0.0/16
+[Environment=development]" style=filled
+		dev_subnet1 [label="Private Subnet 1
+10.1.1.0/24
+AZ: us-east-1a
+🔒" fillcolor="#27AE60" fontcolor=white]
+		dev_subnet2 [label="Private Subnet 2
+10.1.2.0/24
+AZ: us-east-1b
+🔒" fillcolor="#27AE60" fontcolor=white]
+		dev_rds [label="RDS Development
+🗄️
+Dados de Teste" fillcolor="#527FFF" fontcolor=white shape=cylinder]
+		dev_ec2 [label="EC2 Development
+💻
+Testes" fillcolor="#FF9900" fontcolor=white]
+		dev_nacl [label="Network ACL
+🚫
+DENY from 10.0.0.0/16" fillcolor="#229954" fontcolor=white shape=hexagon]
+	}
+	prod_subnet1 -> prod_ec2 [style=invis]
+	prod_subnet2 -> prod_rds [style=invis]
+	prod_ec2 -> prod_rds [label="✅ Allow
+(mesma VPC)" color=green fontcolor=green]
+	dev_subnet1 -> dev_ec2 [style=invis]
+	dev_subnet2 -> dev_rds [style=invis]
+	dev_ec2 -> dev_rds [label="✅ Allow
+(mesma VPC)" color=green fontcolor=green]
+	dev_ec2 -> prod_nacl [label="❌ DENIED
+NACL Rule" color=red constraint=false fontcolor=red style=dashed]
+	prod_nacl -> prod_rds [constraint=false style=invis]
+	prod_ec2 -> dev_nacl [label="❌ DENIED
+NACL Rule" color=red constraint=false fontcolor=red style=dashed]
+	dev_nacl -> dev_rds [constraint=false style=invis]
+	igw_prod [label="Internet Gateway
+🌐
+Produção" fillcolor="#3498DB" fontcolor=white shape=house]
+	igw_dev [label="Internet Gateway
+🌐
+Desenvolvimento" fillcolor="#5DADE2" fontcolor=white shape=house]
+	igw_prod -> prod_subnet1 [label=routed dir=both style=dotted]
+	igw_dev -> dev_subnet1 [label=routed dir=both style=dotted]
+	subgraph cluster_sg {
+		color="#FFF4E6" label="Security Groups" style=filled
+		sg_prod [label="SG Production
+🛡️
+Port 443 only
+Source: VPC CIDR" fillcolor="#E67E22" fontcolor=white shape=octagon]
+		sg_dev [label="SG Development
+🛡️
+Port 443, 22, 8080
+Source: VPC CIDR" fillcolor="#F39C12" fontcolor=white shape=octagon]
+	}
+	sg_prod -> prod_ec2 [label=protects style=dotted]
+	sg_dev -> dev_ec2 [label=protects style=dotted]
+	vpc_flow [label="VPC Flow Logs
+📊
+Monitora tentativas
+de acesso" fillcolor="#9B59B6" fontcolor=white shape=component]
+	prod_nacl -> vpc_flow [label="logs denials" style=dotted]
+	dev_nacl -> vpc_flow [label="logs denials" style=dotted]
+	subgraph cluster_legend {
+		color=white label="Princípios de Segregação" style=filled
+		leg1 [label="🔴 CIDRs Não Sobrepostos:
+- Prod: 10.0.0.0/16
+- Dev: 10.1.0.0/16" fillcolor="#FFEBEE" shape=note]
+		leg2 [label="🟢 Isolamento de Rede:
+- Sem VPC Peering
+- NACLs bloqueiam inter-VPC
+- Zero trust entre ambientes" fillcolor="#E8F5E9" shape=note]
+		leg3 [label="⚠️ Blast Radius:
+- Incidente em Dev não afeta Prod
+- Dados de Prod inacessíveis de Dev" fillcolor="#FFF4E6" shape=note]
+	}
+	dpi=300
+}

@@ -1,0 +1,145 @@
+// ISO 27018 - Controle de Localização de Dados
+digraph {
+	nodesep=1.0 rankdir=TB ranksep=1.2 splines=ortho
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	fontname="Arial Bold" fontsize=16 label="ISO 27018 - Data Residency (LGPD Art. 11 e 33)
+Dados 100% em território brasileiro" labelloc=t
+	subgraph cluster_brazil {
+		color="#4CAF50" fontsize=14 label="🇧🇷 AWS sa-east-1 (São Paulo, Brasil)
+Latência: ~15ms | Compliance: LGPD" style="filled,bold"
+		subgraph cluster_az1 {
+			color="#C8E6C9" label="AZ 1 (us-east-1a)" style=filled
+			s3_az1 [label="S3 Bucket (Primary)
+📦
+[Region=sa-east-1]
+[LGPD=true]
+[DataType=PersonalData]" fillcolor="#569A31" fontcolor=white]
+			rds_az1 [label="RDS Primary
+💾
+Master Instance" fillcolor="#527FFF" fontcolor=white]
+		}
+		subgraph cluster_az2 {
+			color="#C8E6C9" label="AZ 2 (us-east-1b)" style=filled
+			s3_az2 [label="S3 Replica (Local)
+📦
+Same Region Only" fillcolor="#7AC142" fontcolor=white]
+			rds_az2 [label="RDS Standby
+💾
+Read Replica" fillcolor="#7B9FFF" fontcolor=white]
+		}
+		policy [label="Bucket Policy
+🚫
+DENY Replication
+fora de sa-east-1" fillcolor="#E74C3C" fontcolor=white shape=octagon]
+		lifecycle [label="Lifecycle Policy
+♻️
+Retenção máxima: 5 anos
+LGPD Art. 15" fillcolor="#F39C12" fontcolor=white]
+	}
+	subgraph cluster_blocked {
+		color="#FFCDD2" fontsize=12 label="❌ Regiões Bloqueadas (Replicação Proibida)" style="filled,dashed"
+		us_east [label="US East (N. Virginia)
+🇺🇸
+us-east-1" fillcolor="#B0BEC5" fontcolor=black style="filled,dashed"]
+		eu_west [label="EU West (Ireland)
+🇮🇪
+eu-west-1" fillcolor="#B0BEC5" fontcolor=black style="filled,dashed"]
+		ap_south [label="AP South (Singapore)
+🇸🇬
+ap-southeast-1" fillcolor="#B0BEC5" fontcolor=black style="filled,dashed"]
+	}
+	subgraph cluster_monitoring {
+		color="#E3F2FD" label="Monitoramento de Compliance" style=filled
+		config [label="AWS Config
+⚙️
+Regra: s3-bucket-replication-enabled
+Action: DENY cross-region" fillcolor="#146EB4" fontcolor=white]
+		config_rule [label="Config Rule
+📋
+Verifica:
+- Region = sa-east-1
+- Tags: LGPD=true
+- No cross-region replication" fillcolor="#1E88E5" fontcolor=white]
+	}
+	subgraph cluster_alarms {
+		color="#FFF4E6" label="Alertas de Violação" style=filled
+		alarm [label="CloudWatch Alarm
+🚨
+Detecta tentativas de:
+- Cross-region replication
+- Data export fora do Brasil" fillcolor="#D4145A" fontcolor=white]
+		sns [label="SNS Topic
+📧
+Notifica:
+- DPO
+- Compliance Officer
+- Security Team" fillcolor="#FF4F8B" fontcolor=white]
+	}
+	user_br [label="Usuários no Brasil
+👥
+Latência: ~15ms
+Acesso direto" fillcolor="#4CAF50" fontcolor=white shape=person]
+	user_global [label="Usuários Globais
+🌍
+Latência: variável
+Dados permanecem no Brasil" fillcolor="#FF9800" fontcolor=white shape=person]
+	user_br -> s3_az1 [label="✅ Acesso permitido
+Dados em sa-east-1" color=green fontcolor=green style=bold]
+	user_global -> s3_az1 [label="✅ Acesso permitido
+Dados NÃO saem do Brasil" color=orange fontcolor=orange style=bold]
+	s3_az1 -> s3_az2 [label="✅ Replicação permitida
+(mesma região)" color=green dir=both fontcolor=green]
+	rds_az1 -> rds_az2 [label="✅ Replicação permitida
+(mesma região)" color=green dir=both fontcolor=green]
+	s3_az1 -> us_east [label="❌ DENIED
+Bucket Policy" color=red fontcolor=red style=dashed]
+	s3_az1 -> eu_west [label="❌ DENIED
+Bucket Policy" color=red fontcolor=red style=dashed]
+	s3_az1 -> ap_south [label="❌ DENIED
+Bucket Policy" color=red fontcolor=red style=dashed]
+	policy -> s3_az1 [label=enforces color=red style=dotted]
+	lifecycle -> s3_az1 [label="manages retention" color=orange style=dotted]
+	config -> s3_az1 [label="validates compliance" style=dotted]
+	config -> config_rule [style=invis]
+	config_rule -> alarm [label="triggers on violation" color=red style=dashed]
+	alarm -> sns [label=notifies color=red]
+	subgraph cluster_cert {
+		color="#F3E5F5" label="Certificações e Compliance" style=filled
+		certs [label="Conformidade:
+✅ LGPD Art. 11 (Transferência)
+✅ LGPD Art. 33 (Localização)
+✅ ISO 27018
+✅ SOC 2 Type II" fillcolor="#9B59B6" fontcolor=white shape=folder]
+	}
+	cloudtrail [label="CloudTrail
+📋
+Registra:
+- Tentativas de replicação
+- Exportações de dados
+- Mudanças em policies" fillcolor="#146EB4" fontcolor=white]
+	s3_az1 -> cloudtrail [label="audit trail" style=dotted]
+	subgraph cluster_performance {
+		color="#FFFDE7" label="Métricas de Performance" style=filled
+		metrics [label="Latência por Região:
+🇧🇷 Brasil: ~15ms
+🇺🇸 EUA: ~150ms
+🇪🇺 Europa: ~180ms
+🇸🇬 Ásia: ~250ms
+
+✅ Trade-off aceito para compliance LGPD" fillcolor="#FFF9C4" shape=note]
+	}
+	subgraph cluster_legend {
+		color=white label="Garantias de Localização" style=filled
+		leg1 [label="🇧🇷 100% dos dados em sa-east-1 (Brasil)
+🚫 Zero replicação cross-region
+✅ Multi-AZ para alta disponibilidade" fillcolor=lightgreen shape=note]
+		leg2 [label="📋 LGPD Art. 11: Transferência internacional proibida
+📋 LGPD Art. 33: Localização deve ser informada
+📋 Retenção: Máximo 5 anos (LGPD Art. 15)" fillcolor=lightblue shape=note]
+		leg3 [label="⚠️ Violações detectadas:
+- Tentativa de replicação → Alerta imediato
+- Export para outra região → Bloqueado
+- Policy modificada → Auditoria" fillcolor="#FFCCBC" shape=note]
+	}
+	dpi=300
+}

@@ -1,0 +1,5 @@
+Compliance as Code - Ciclo de Vida da Conformidade Automatizada
+
+Transforma a gestão de compliance de um processo manual para fluxo contínuo integrado ao desenvolvimento. Inicia com a Definição de requisitos regulatórios (LGPD, PCI DSS, HIPAA) em políticas executáveis e Versionamento como código auditável.
+
+As fases de Automação CI/CD e Enforcement validam mudanças em tempo real, bloqueando deploys não conformes. O ciclo completa com Auditoria contínua e feedback loop de melhoria, garantindo compliance by design.

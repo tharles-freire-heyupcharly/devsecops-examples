@@ -1,0 +1,81 @@
+// ISO 27017 - Criptografia em Nuvem
+digraph {
+	nodesep=0.8 rankdir=TB ranksep=1.0 splines=ortho
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	fontname="Arial Bold" fontsize=16 label="ISO 27017 - Criptografia de Dados em Repouso
+AES-256 | Rotação Automática" labelloc=t
+	app [label="Aplicação
+💻
+Upload de Dados" fillcolor="#232F3E" fontcolor=white]
+	subgraph cluster_kms {
+		color="#FFF4E6" label="AWS Key Management Service (KMS)" style=filled
+		cmk [label="Customer Master Key
+🔑
+Rotação: 365 dias
+Algorithm: AES-256" fillcolor="#D4145A" fontcolor=white]
+		dek [label="Data Encryption Keys
+🔐
+Geradas por CMK
+Únicas por objeto" fillcolor="#FF4F8B" fontcolor=white]
+	}
+	subgraph cluster_s3 {
+		color="#E8F5E9" label="Amazon S3" style=filled
+		bucket [label="S3 Bucket
+📦
+server_side_encryption" fillcolor="#569A31" fontcolor=white]
+		objects [label="Objetos Criptografados
+🔒
+AES-256-KMS
+Metadata: x-amz-server-side-encryption" fillcolor="#7AC142" fontcolor=white]
+	}
+	subgraph cluster_security {
+		color="#FFEBEE" label="Controles de Segurança" style=filled
+		block [label="Public Access Block
+🚫
+Bloqueio Total" fillcolor="#E74C3C" fontcolor=white]
+		policy [label="Bucket Policy
+📜
+Requer Criptografia
+Deny sem KMS" fillcolor="#C0392B" fontcolor=white]
+	}
+	subgraph cluster_audit {
+		color="#E3F2FD" label="Auditoria & Compliance" style=filled
+		cloudtrail [label="CloudTrail
+📋
+Logs de uso de chaves" fillcolor="#146EB4" fontcolor=white]
+		config [label="AWS Config
+⚙️
+Validação contínua" fillcolor="#527FFF" fontcolor=white]
+	}
+	decrypt [label="Dados Descriptografados
+🔓
+Apenas em memória
+Nunca em disco" fillcolor="#95A5A6" fontcolor=white shape=cylinder]
+	app -> bucket [label="1. PUT Object" color=blue fontcolor=blue]
+	bucket -> cmk [label="2. Request DEK" color=blue fontcolor=blue style=dashed]
+	cmk -> dek [label="3. Generate" color=blue fontcolor=blue]
+	dek -> bucket [label="4. Return DEK" color=blue fontcolor=blue style=dashed]
+	bucket -> objects [label="5. Encrypt & Store" color=blue fontcolor=blue]
+	app -> objects [label="6. GET Object" color=green dir=back fontcolor=green]
+	objects -> cmk [label="7. Request Decrypt" color=green dir=forward fontcolor=green style=dashed]
+	cmk -> decrypt [label="8. Decrypt DEK" color=green fontcolor=green]
+	decrypt -> app [label="9. Return Data" color=green fontcolor=green]
+	block -> bucket [label="prevents public access" color=red style=dotted]
+	policy -> bucket [label="enforces encryption" color=red style=dotted]
+	cmk -> cloudtrail [label="logs key usage" style=dotted]
+	bucket -> config [label="compliance check" style=dotted]
+	rotation [label="Rotação Automática
+♻️
+365 dias
+Chaves antigas mantidas" fillcolor="#F39C12" fontcolor=white shape=diamond]
+	cmk -> rotation [label="auto-rotate" color=orange style=dashed]
+	subgraph cluster_legend {
+		color=white label="Detalhes de Implementação" style=filled
+		leg1 [label="🔵 Upload: Dados criptografados antes de armazenar
+🟢 Download: Dados descriptografados em memória" fillcolor=lightyellow shape=note]
+		leg2 [label="✅ Criptografia: AES-256
+✅ Chaves gerenciadas pela AWS
+✅ Zero trust: Dados sempre criptografados em disco" fillcolor=lightgreen shape=note]
+	}
+	dpi=300
+}

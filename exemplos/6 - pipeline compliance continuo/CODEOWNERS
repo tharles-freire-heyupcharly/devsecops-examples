@@ -1,0 +1,79 @@
+# CODEOWNERS - Define quem deve revisar mudanças específicas
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ========================================
+# Global Owners
+# ========================================
+# Todos os arquivos requerem aprovação do Security Team
+* @security-team @devops-team
+
+# ========================================
+# Pipeline de Compliance
+# ========================================
+# Mudanças na pipeline requerem aprovação do Compliance Team
+/.github/workflows/compliance-pipeline.yml @compliance-team @dpo @security-team
+
+# ========================================
+# Políticas OPA
+# ========================================
+# Mudanças em políticas requerem aprovação do Compliance Officer
+**policy.rego @compliance-team @dpo
+
+# ========================================
+# Políticas ISO 27017
+# ========================================
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27017-backup/ @security-team @cloud-architect
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27017-criptografia/ @security-team @crypto-team
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27017-segregacao/ @network-team @security-team
+
+# ========================================
+# Políticas ISO 27018 (LGPD)
+# ========================================
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27018-auditoria/ @dpo @security-team @audit-team
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27018-esquecimento/ @dpo @legal-team @privacy-team
+exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/iso-27018-localizacao/ @dpo @legal-team @compliance-team
+
+# ========================================
+# Terraform Root Module
+# ========================================
+# Mudanças em arquivos Terraform principais
+*.tf @devops-team @cloud-architect @security-team
+
+# ========================================
+# Documentação
+# ========================================
+*.md @tech-writers @compliance-team
+
+# ========================================
+# Secrets e Configuração
+# ========================================
+.env.example @security-team
+.gitignore @devops-team
+
+# ========================================
+# Exemplos de Times:
+# ========================================
+# @security-team - Time de Segurança da Informação
+# @devops-team - Time de DevOps/SRE
+# @compliance-team - Time de Compliance/Governança
+# @dpo - Data Protection Officer (LGPD)
+# @legal-team - Time Jurídico
+# @privacy-team - Time de Privacidade
+# @audit-team - Time de Auditoria
+# @cloud-architect - Arquiteto de Cloud
+# @network-team - Time de Redes
+# @crypto-team - Time de Criptografia
+# @tech-writers - Escritores Técnicos
+
+# ========================================
+# Configuração de Aprovações Mínimas
+# ========================================
+# Recomendado no GitHub:
+# - Settings > Branches > Branch protection rules
+# - Require pull request reviews before merging: 2 aprovações
+# - Require review from Code Owners: ✅
+# - Dismiss stale pull request approvals: ✅
+# - Require status checks to pass: ✅
+#   - compliance-pipeline/code-validation
+#   - compliance-pipeline/security-scan
+#   - compliance-pipeline/policy-validation

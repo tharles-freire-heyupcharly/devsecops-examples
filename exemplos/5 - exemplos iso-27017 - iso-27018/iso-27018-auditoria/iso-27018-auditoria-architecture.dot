@@ -1,0 +1,123 @@
+// ISO 27018 - Auditoria e Rastreabilidade
+digraph {
+	nodesep=0.8 rankdir=TB ranksep=1.0 splines=ortho
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	fontname="Arial Bold" fontsize=16 label="ISO 27018 - Auditoria e Rastreabilidade
+LGPD Art. 37 | Retenção: 7 anos" labelloc=t
+	subgraph cluster_datasources {
+		color="#FFF3E0" label="Recursos com Dados Pessoais" style=filled
+		s3_pii [label="S3 Bucket
+📦
+[DataType=PII]
+CPF, Nome, Email" fillcolor="#569A31" fontcolor=white]
+		dynamo_pii [label="DynamoDB Table
+🗄️
+[DataType=PII]
+Registros de usuários" fillcolor="#527FFF" fontcolor=white]
+		rds_pii [label="RDS Database
+💾
+[DataType=PII]
+Dados financeiros" fillcolor="#3B48CC" fontcolor=white]
+	}
+	subgraph cluster_cloudtrail {
+		color="#E3F2FD" label="AWS CloudTrail" style=filled
+		trail [label="CloudTrail Trail
+📝
+Multi-Region: ✅
+Validation: ✅
+Data Events: ✅" fillcolor="#146EB4" fontcolor=white]
+		events [label="Eventos Capturados
+🔍
+- GetObject (S3)
+- Query (DynamoDB)
+- SELECT (RDS)
+- IAM Changes" fillcolor="#1E88E5" fontcolor=white]
+	}
+	subgraph cluster_storage {
+		color="#E8F5E9" label="Armazenamento de Logs de Auditoria" style=filled
+		log_bucket [label="S3 Bucket (Logs)
+🗄️
+Versioning: ✅
+Encryption: AES-256
+MFA Delete: ✅" fillcolor="#43A047" fontcolor=white]
+		lifecycle [label="Lifecycle Policy
+♻️
+Standard: 90 dias
+Glacier: 7 anos
+Deleção: Após 7 anos" fillcolor="#66BB6A" fontcolor=white]
+	}
+	subgraph cluster_detection {
+		color="#FFF4E6" label="Detecção de Anomalias" style=filled
+		metric [label="CloudWatch Metric Filter
+📊
+Detecta:
+- Acesso fora de horário
+- Múltiplas falhas de acesso
+- Exportações em massa" fillcolor="#FF4F8B" fontcolor=white]
+		alarm [label="CloudWatch Alarm
+🚨
+Threshold: > 5 acessos/hora
+Avalia: 5 minutos" fillcolor="#D4145A" fontcolor=white]
+	}
+	subgraph cluster_notifications {
+		color="#FFEBEE" label="Alertas e Notificações" style=filled
+		sns [label="SNS Topic
+📧
+Destinatários:
+- Security Team
+- DPO (LGPD)" fillcolor="#E74C3C" fontcolor=white]
+		lambda [label="Lambda Function
+⚡
+Enriquece alertas
+Cria tickets (JIRA)" fillcolor="#FF9900" fontcolor=white]
+	}
+	subgraph cluster_analysis {
+		color="#F3E5F5" label="Análise e Compliance" style=filled
+		athena [label="Amazon Athena
+🔎
+Queries SQL sobre logs
+Relatórios LGPD Art. 37" fillcolor="#8E44AD" fontcolor=white]
+		quicksight [label="QuickSight Dashboard
+📊
+Visualização:
+- Quem acessou?
+- Quando?
+- De onde?" fillcolor="#9B59B6" fontcolor=white]
+	}
+	s3_pii -> trail [label="1. Acesso auditado" color=blue fontcolor=blue]
+	dynamo_pii -> trail [label="1. Acesso auditado" color=blue fontcolor=blue]
+	rds_pii -> trail [label="1. Acesso auditado" color=blue fontcolor=blue]
+	trail -> events [label="2. Coleta eventos" color=blue fontcolor=blue]
+	events -> log_bucket [label="3. Persiste logs" color=blue fontcolor=blue]
+	log_bucket -> lifecycle [label="4. Aplica retenção" color=green fontcolor=green]
+	events -> metric [label="5. Analisa padrões" color=orange fontcolor=orange style=dashed]
+	metric -> alarm [label="6. Threshold excedido" color=red fontcolor=red]
+	alarm -> sns [label="7. Notifica" color=red fontcolor=red]
+	sns -> lambda [label="8. Processa alerta" color=red fontcolor=red]
+	log_bucket -> athena [label="9. Query logs" style=dotted]
+	athena -> quicksight [label="10. Visualiza" style=dotted]
+	validation [label="Log File Validation
+✅
+SHA-256 Hash
+Detecta adulteração" fillcolor="#16A085" fontcolor=white shape=diamond]
+	log_bucket -> validation [label=validate color=green style=dashed]
+	user [label="Usuário/Admin
+👤
+Acessa dados pessoais" fillcolor="#34495E" fontcolor=white shape=person]
+	user -> s3_pii [label=acessa color=purple style=bold]
+	user -> dynamo_pii [label=acessa color=purple style=bold]
+	user -> rds_pii [label=acessa color=purple style=bold]
+	subgraph cluster_legend {
+		color=white label="Requisitos de Auditoria" style=filled
+		leg1 [label="✅ Multi-Region: Auditoria global
+✅ Data Events: Acesso a objetos/registros
+✅ Log Validation: Detecta adulteração" fillcolor=lightblue shape=note]
+		leg2 [label="📋 LGPD Art. 37: Relatório de Impacto
+📋 Retenção: 7 anos mínimo
+📋 Não-repúdio: Prova de acesso" fillcolor=lightgreen shape=note]
+		leg3 [label="🚨 Detecção: < 5 minutos
+🚨 Alertas: Security Team + DPO
+🚨 Resposta: Automática via Lambda" fillcolor=lightyellow shape=note]
+	}
+	dpi=300
+}

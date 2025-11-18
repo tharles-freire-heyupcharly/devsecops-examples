@@ -1,0 +1,78 @@
+flowchart LR
+    %% Ciclo de Vida da Conformidade Automatizada
+    
+    Start(("🚀<br/>Início"))
+    
+    subgraph Fase1["📋 1. DEFINIÇÃO"]
+        direction TB
+        A1["Requisitos Regulatórios"]
+        A2["Tradução para Políticas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        A3["Rego, Sentinel, YAML&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        A1 --> A2 --> A3
+    end
+    
+    subgraph Fase2["🔄 2. VERSIONAMENTO"]
+        direction TB
+        B1["Git: Controle de Versão&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        B2["Code Review&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        B3["Histórico Completo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        B1 --> B2 --> B3
+    end
+    
+    subgraph Fase3["⚙️ 3. AUTOMAÇÃO CI/CD"]
+        direction TB
+        C1["Validação Automática&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        C2["Cada Commit/PR/Deploy&nbsp;&nbsp;&nbsp;&nbsp;"]
+        C3["OPA, Sentinel, Custodian&nbsp;&nbsp;&nbsp;"]
+        C1 --> C2 --> C3
+    end
+    
+    subgraph Fase4["🛡️ 4. ENFORCEMENT"]
+        direction TB
+        D1["Bloqueia Deploys&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        D2["Não Conformes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        D3["Remediação Automática&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        D1 --> D2 --> D3
+    end
+    
+    subgraph Fase5["📊 5. AUDITORIA"]
+        direction TB
+        E1["Logs Automáticos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        E2["Dashboards Tempo Real&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        E3["Evidências Regulatórias&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"]
+        E1 --> E2 --> E3
+    end
+    
+    Fim(("✅<br/>Compliance<br/>Contínuo"))
+    
+    Start --> Fase1
+    Fase1 ==> Fase2
+    Fase2 ==> Fase3
+    Fase3 ==> Fase4
+    Fase4 ==> Fase5
+    Fase5 --> Fim
+    
+    %% Loop de feedback
+    Fim -.-> Fase1
+    
+    %% Ferramentas principais
+    Tools["🔧 Ferramentas-chave:<br/>OPA | Sentinel | Kyverno<br/>AWS Config | Azure Policy"]
+    
+    Fase5 --> Tools
+    
+    %% Estilos
+    classDef startEnd fill:#e1f5e1,stroke:#4caf50,stroke-width:3px,color:#000
+    classDef fase1 fill:#e3f2fd,stroke:#2196f3,stroke-width:2px,color:#000
+    classDef fase2 fill:#fff3e0,stroke:#ff9800,stroke-width:2px,color:#000
+    classDef fase3 fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#000
+    classDef fase4 fill:#fce4ec,stroke:#e91e63,stroke-width:2px,color:#000
+    classDef fase5 fill:#e0f2f1,stroke:#009688,stroke-width:2px,color:#000
+    classDef tools fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000
+    
+    class Start,Fim startEnd
+    class Fase1 fase1
+    class Fase2 fase2
+    class Fase3 fase3
+    class Fase4 fase4
+    class Fase5 fase5
+    class Tools tools

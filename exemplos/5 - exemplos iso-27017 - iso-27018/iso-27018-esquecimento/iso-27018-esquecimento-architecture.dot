@@ -1,0 +1,130 @@
+// ISO 27018 - Direito ao Esquecimento
+digraph {
+	nodesep=0.8 rankdir=TB ranksep=1.0 splines=ortho
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	fontname="Arial Bold" fontsize=16 label="ISO 27018 - Direito ao Esquecimento (LGPD Art. 18, VI)
+Prazo: < 15 dias | SLA: 5 minutos" labelloc=t
+	titular [label="Titular de Dados
+👤
+Solicitação de Exclusão
+LGPD Art. 18, VI" fillcolor="#34495E" fontcolor=white shape=person]
+	api [label="API Gateway
+🌐
+POST /data-erasure
+{\"user_id\": \"12345\"}" fillcolor="#E67E22" fontcolor=white]
+	subgraph cluster_queue {
+		color="#FFF4E6" label="Gerenciamento de Solicitações" style=filled
+		sqs [label="SQS Queue
+📬
+Retenção: 14 dias
+DLQ habilitada
+FIFO: ✅" fillcolor="#D4145A" fontcolor=white]
+		dlq [label="Dead Letter Queue
+⚠️
+Falhas após 3 tentativas" fillcolor="#C0392B" fontcolor=white]
+	}
+	subgraph cluster_lambda {
+		color="#FFE5CC" label="Processamento de Exclusão" style=filled
+		lambda_func [label="Lambda Function
+⚡
+Timeout: 5 min
+Memory: 1024 MB
+Concurrency: 10" fillcolor="#FF9900" fontcolor=white]
+		steps [label="Passos de Exclusão:
+1️⃣ Validar solicitação
+2️⃣ Excluir de S3
+3️⃣ Excluir de DynamoDB
+4️⃣ Excluir de RDS
+5️⃣ Registrar exclusão
+6️⃣ Notificar titular" fillcolor="#FFB74D" fontcolor=black shape=note]
+	}
+	subgraph cluster_datasources {
+		color="#E3F2FD" label="Fontes de Dados Pessoais" style=filled
+		s3_data [label="S3 Bucket
+📦
+Fotos, documentos" fillcolor="#569A31" fontcolor=white]
+		dynamo_data [label="DynamoDB
+🗄️
+Perfil de usuário" fillcolor="#527FFF" fontcolor=white]
+		rds_data [label="RDS Database
+💾
+Transações, histórico" fillcolor="#3B48CC" fontcolor=white]
+		elasticsearch [label="ElasticSearch
+🔍
+Índices de busca" fillcolor="#005571" fontcolor=white]
+	}
+	subgraph cluster_registry {
+		color="#E8F5E9" label="Auditoria de Exclusões (7 anos)" style=filled
+		audit_table [label="DynamoDB Audit Table
+📋
+PITR: ✅
+Registro imutável:
+- user_id
+- timestamp
+- sistemas afetados
+- quem solicitou" fillcolor="#43A047" fontcolor=white]
+		cloudwatch [label="CloudWatch Logs
+📊
+Retenção: 7 anos
+LGPD Art. 37" fillcolor="#66BB6A" fontcolor=white]
+	}
+	subgraph cluster_notification {
+		color="#F3E5F5" label="Confirmação ao Titular" style=filled
+		ses [label="Amazon SES
+📧
+Email de confirmação
+Comprovante de exclusão" fillcolor="#8E44AD" fontcolor=white]
+		sns_notify [label="SNS Topic
+📲
+Notifica DPO
+Compliance Team" fillcolor="#9B59B6" fontcolor=white]
+	}
+	titular -> api [label="1. POST request" color=blue fontcolor=blue]
+	api -> sqs [label="2. Enqueue" color=blue fontcolor=blue]
+	sqs -> lambda_func [label="3. Trigger" color=orange fontcolor=orange]
+	lambda_func -> steps [style=invis]
+	lambda_func -> s3_data [label="4a. DELETE objects" color=red fontcolor=red]
+	lambda_func -> dynamo_data [label="4b. DELETE items" color=red fontcolor=red]
+	lambda_func -> rds_data [label="4c. DELETE rows" color=red fontcolor=red]
+	lambda_func -> elasticsearch [label="4d. DELETE indices" color=red fontcolor=red]
+	lambda_func -> audit_table [label="5. Register erasure" color=green fontcolor=green]
+	lambda_func -> cloudwatch [label="6. Log execution" color=green fontcolor=green style=dashed]
+	lambda_func -> ses [label="7a. Email titular" color=purple fontcolor=purple]
+	lambda_func -> sns_notify [label="7b. Notify team" color=purple fontcolor=purple]
+	sqs -> dlq [label="Após 3 falhas" color=red fontcolor=red style=dashed]
+	alarm [label="CloudWatch Alarm
+🚨
+Monitora:
+- DLQ depth > 0
+- Latência > 5 min
+- Taxa de erro > 1%" fillcolor="#E74C3C" fontcolor=white shape=diamond]
+	dlq -> alarm [label="triggers alert" color=red style=dashed]
+	cloudwatch -> alarm [label=monitors style=dotted]
+	ses -> titular [label="8. Confirmação
+\"Seus dados foram excluídos\"" color=green fontcolor=green style=bold]
+	subgraph cluster_timeline {
+		color="#FFFDE7" label="Timeline de Processamento" style=filled
+		timeline [label="T0: Solicitação recebida
+⏱️ T+2min: Exclusão de S3/DynamoDB
+⏱️ T+3min: Exclusão de RDS
+⏱️ T+4min: Registro de auditoria
+⏱️ T+5min: Confirmação enviada
+✅ SLA: < 15 dias (LGPD)" fillcolor="#FFF9C4" shape=note]
+	}
+	subgraph cluster_legend {
+		color=white label="Requisitos LGPD" style=filled
+		leg1 [label="✅ Art. 18, VI: Direito ao esquecimento
+✅ Art. 37: Auditoria por 7 anos
+✅ Prazo: Máximo 15 dias" fillcolor=lightgreen shape=note]
+		leg2 [label="🔒 Garantias:
+- Processamento idempotente
+- Registro imutável (PITR)
+- Comprovante de exclusão
+- Rastreabilidade completa" fillcolor=lightblue shape=note]
+		leg3 [label="⚠️ Multas evitadas:
+- Não atendimento: R$ 50 milhões
+- Sem comprovação: Sanções ANPD
+- Prazo excedido: Advertências" fillcolor="#FFCCBC" shape=note]
+	}
+	dpi=300
+}
