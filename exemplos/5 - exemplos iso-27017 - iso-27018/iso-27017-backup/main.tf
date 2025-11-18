@@ -37,7 +37,7 @@ resource "aws_backup_plan" "plano_diario" {
 resource "aws_backup_selection" "selecao_recursos" {
   name         = "selecao-backup-producao"
   plan_id      = aws_backup_plan.plano_diario.id
-  iam_role_arn = "arn:aws:iam::ACCOUNT_ID:role/service-role/AWSBackupDefaultServiceRole"
+  iam_role_arn = "arn:aws:iam::123456789012:role/service-role/AWSBackupDefaultServiceRole" # Placeholder - substituir com ARN real
 
   selection_tag {
     type  = "STRINGEQUALS"
@@ -54,6 +54,6 @@ resource "aws_backup_selection" "selecao_recursos" {
 
 resource "aws_backup_vault_notifications" "notificacoes" {
   backup_vault_name   = aws_backup_vault.vault_conformidade.name
-  sns_topic_arn       = "arn:aws:sns:us-east-1:ACCOUNT_ID:backup-notifications"
+  sns_topic_arn       = "arn:aws:sns:sa-east-1:123456789012:backup-notifications" # Placeholder - substituir com ARN real
   backup_vault_events = ["BACKUP_JOB_FAILED", "RESTORE_JOB_COMPLETED"]
 }

@@ -50,7 +50,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "retencao_lgpd" {
   }
 }
 
-resource "aws_config_rule" "verificacao_regiao" {
+# AWS Config rule para verificação de conformidade
+# Nota: aws_config_config_rule é o recurso correto no provider AWS v6+
+resource "aws_config_config_rule" "verificacao_regiao" {
   name = "s3-dados-pessoais-regiao-brasil"
 
   source {

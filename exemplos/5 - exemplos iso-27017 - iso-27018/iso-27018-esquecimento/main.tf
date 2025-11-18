@@ -4,7 +4,7 @@
 resource "aws_lambda_function" "processar_esquecimento" {
   filename      = "esquecimento_handler.zip"
   function_name = "lgpd-direito-esquecimento"
-  role          = "arn:aws:iam::ACCOUNT_ID:role/lambda-esquecimento-role"
+  role          = "arn:aws:iam::123456789012:role/lambda-esquecimento-role" # Placeholder - substituir com ARN real
   handler       = "index.handler"
   runtime       = "python3.11"
   timeout       = 300
@@ -39,7 +39,7 @@ resource "aws_sqs_queue" "fila_esquecimento" {
 
 resource "aws_cloudwatch_log_group" "logs_esquecimento" {
   name              = "/aws/lambda/lgpd-direito-esquecimento"
-  retention_in_days = 2555 # 7 anos - auditoria LGPD
+  retention_in_days = 2557 # ~7 anos - auditoria LGPD (valor válido mais próximo)
 
   tags = {
     Compliance = "ISO-27018"
