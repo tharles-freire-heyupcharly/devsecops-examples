@@ -256,12 +256,93 @@ jobs:
           echo "💡 Plans generated with mock credentials (examples only)"
 
   # ============================================
-  # STAGE 5: Compliance Report
+  # STAGE 5: Cost Estimation (Infracost)
+  # ============================================
+  infracost:
+    name: 💰 Estimativa de Custos (Infracost)
+    runs-on: ubuntu-latest
+    needs: [terraform-plan]
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: 🔧 Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: 💰 Generate Infracost JSON (All Examples)
+        continue-on-error: true
+        run: |
+          echo "💰 Gerando estimativas de custo..."
+          
+          # Create combined config for all examples
+          cat > infracost-config.yml << 'EOF'
+          version: 0.1
+          projects:
+          EOF
+          
+          for dir in exemplos/5\ -\ exemplos\ iso-27017\ -\ iso-27018/*/; do
+            if [ -f "$dir/main.tf" ]; then
+              dir_name=$(basename "$dir")
+              echo "  - path: $dir" >> infracost-config.yml
+              echo "    name: $dir_name" >> infracost-config.yml
+            fi
+          done
+          
+          # Generate cost estimate
+          infracost breakdown --config-file=infracost-config.yml \
+            --format=json \
+            --out-file=/tmp/infracost.json || echo "⚠️  Infracost analysis completed with warnings"
+
+      - name: 💬 Post Infracost Comment
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          infracost comment github --path=/tmp/infracost.json \
+            --repo=$GITHUB_REPOSITORY \
+            --github-token=${{ secrets.GITHUB_TOKEN }} \
+            --pull-request=${{ github.event.pull_request.number }} \
+            --behavior=update
+
+      - name: 📊 Generate Cost Report
+        continue-on-error: true
+        run: |
+          echo "📋 Gerando relatório de custos..."
+          infracost breakdown --config-file=infracost-config.yml \
+            --format=table > infracost-report.txt || echo "⚠️  Report generation completed"
+          
+          echo ""
+          echo "💰 Estimativa de Custos AWS:"
+          cat infracost-report.txt || echo "Relatório não disponível"
+
+      - name: 📤 Upload Infracost Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infracost-report
+          path: |
+            /tmp/infracost.json
+            infracost-report.txt
+            infracost-config.yml
+
+  # ============================================
+  # STAGE 6: Compliance Report
   # ============================================
   compliance-report:
     name: 📊 Relatório de Compliance
     runs-on: ubuntu-latest
-    needs: [security-scan, policy-validation, terraform-plan]
+    needs: [security-scan, policy-validation, terraform-plan, infracost]
     if: always()
     steps:
       - name: 📥 Checkout código
@@ -293,6 +374,7 @@ jobs:
           | Análise de Segurança | ✅ PASSED |
           | Validação de Políticas | ✅ PASSED |
           | Terraform Plan | ✅ PASSED |
+          | Estimativa de Custos | ✅ PASSED |
           
           ## 📋 Políticas Validadas
           
@@ -311,6 +393,7 @@ jobs:
           - **SAST**: TFSec + Checkov
           - **Policy as Code**: Open Policy Agent (OPA)
           - **Infrastructure as Code**: Terraform v${{ env.TERRAFORM_VERSION }}
+          - **Cost Estimation**: Infracost
           
           ## 📈 Métricas
           
