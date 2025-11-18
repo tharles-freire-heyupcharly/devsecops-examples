@@ -58,6 +58,7 @@ jobs:
     name: 🛡️ Análise de Segurança (SAST)
     runs-on: ubuntu-latest
     needs: code-validation
+    if: always()
     steps:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
@@ -92,6 +93,7 @@ jobs:
     name: ⚖️ Validação de Políticas (OPA)
     runs-on: ubuntu-latest
     needs: code-validation
+    if: always()
     steps:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
@@ -208,6 +210,7 @@ jobs:
     name: 📋 Terraform Plan (Dry Run)
     runs-on: ubuntu-latest
     needs: [security-scan, policy-validation]
+    if: always()
     steps:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
