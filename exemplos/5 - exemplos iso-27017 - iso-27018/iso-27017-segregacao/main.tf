@@ -7,9 +7,9 @@ resource "aws_vpc" "producao" {
   enable_dns_support   = true
 
   tags = {
-    Name       = "VPC-Producao"
-    Compliance = "ISO-27017"
-    Control    = "Segregacao"
+    Name        = "VPC-Producao"
+    Compliance  = "ISO-27017"
+    Control     = "Segregacao"
     Environment = "production"
   }
 }
@@ -20,9 +20,9 @@ resource "aws_vpc" "desenvolvimento" {
   enable_dns_support   = true
 
   tags = {
-    Name       = "VPC-Desenvolvimento"
-    Compliance = "ISO-27017"
-    Control    = "Segregacao"
+    Name        = "VPC-Desenvolvimento"
+    Compliance  = "ISO-27017"
+    Control     = "Segregacao"
     Environment = "development"
   }
 }

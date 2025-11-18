@@ -16,7 +16,7 @@ resource "aws_backup_plan" "plano_diario" {
   rule {
     rule_name         = "backup-diario-retencao-30d"
     target_vault_name = aws_backup_vault.vault_conformidade.name
-    schedule          = "cron(0 3 * * ? *)"  # 3AM UTC diariamente
+    schedule          = "cron(0 3 * * ? *)" # 3AM UTC diariamente
 
     lifecycle {
       delete_after = 30

@@ -55,7 +55,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "retencao_logs" {
     status = "Enabled"
 
     expiration {
-      days = 2555  # 7 anos - LGPD Art. 37
+      days = 2555 # 7 anos - LGPD Art. 37
     }
 
     noncurrent_version_expiration {

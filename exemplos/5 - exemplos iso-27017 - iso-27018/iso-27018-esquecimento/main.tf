@@ -28,7 +28,7 @@ resource "aws_sqs_queue" "fila_esquecimento" {
   name                      = "lgpd-solicitacoes-esquecimento"
   delay_seconds             = 0
   max_message_size          = 262144
-  message_retention_seconds = 1209600  # 14 dias
+  message_retention_seconds = 1209600 # 14 dias
   receive_wait_time_seconds = 10
 
   tags = {
@@ -39,7 +39,7 @@ resource "aws_sqs_queue" "fila_esquecimento" {
 
 resource "aws_cloudwatch_log_group" "logs_esquecimento" {
   name              = "/aws/lambda/lgpd-direito-esquecimento"
-  retention_in_days = 2555  # 7 anos - auditoria LGPD
+  retention_in_days = 2555 # 7 anos - auditoria LGPD
 
   tags = {
     Compliance = "ISO-27018"
@@ -48,10 +48,10 @@ resource "aws_cloudwatch_log_group" "logs_esquecimento" {
 }
 
 resource "aws_dynamodb_table" "registro_exclusoes" {
-  name           = "lgpd-registro-exclusoes"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "usuario_id"
-  range_key      = "timestamp_solicitacao"
+  name         = "lgpd-registro-exclusoes"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "usuario_id"
+  range_key    = "timestamp_solicitacao"
 
   attribute {
     name = "usuario_id"

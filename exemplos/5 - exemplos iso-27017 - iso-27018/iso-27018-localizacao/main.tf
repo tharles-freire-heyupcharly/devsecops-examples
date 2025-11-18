@@ -5,11 +5,11 @@ resource "aws_s3_bucket" "dados_pessoais_br" {
   bucket = "empresa-dados-pessoais-brasil"
 
   tags = {
-    Compliance   = "ISO-27018"
-    Control      = "Localizacao"
-    DataType     = "PersonalData"
-    Region       = "Brazil"
-    LGPD         = "true"
+    Compliance = "ISO-27018"
+    Control    = "Localizacao"
+    DataType   = "PersonalData"
+    Region     = "Brazil"
+    LGPD       = "true"
   }
 }
 
@@ -21,8 +21,8 @@ resource "aws_s3_bucket_policy" "bloqueio_replicacao" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DenyReplicationOutsideBrazil"
-        Effect = "Deny"
+        Sid       = "DenyReplicationOutsideBrazil"
+        Effect    = "Deny"
         Principal = "*"
         Action = [
           "s3:PutReplicationConfiguration"
@@ -41,7 +41,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "retencao_lgpd" {
     status = "Enabled"
 
     expiration {
-      days = 1825  # 5 anos - requisito LGPD
+      days = 1825 # 5 anos - requisito LGPD
     }
 
     noncurrent_version_expiration {
