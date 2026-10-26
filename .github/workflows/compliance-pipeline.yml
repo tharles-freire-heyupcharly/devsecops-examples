@@ -128,75 +128,37 @@ jobs:
           done
           echo "✅ All OPA policies syntax validated"
 
-      - name: ✅ Validate ISO 27017 - Backup Policy
+      - name: ✅ Validate Policies (plan + OPA, all examples)
         continue-on-error: true
         run: |
-          echo "🔍 Validando política de Backup..."
-          cd "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-backup"
-          terraform init -backend=false
-          
-          # Always try to run plan and OPA validation
-          if terraform plan -refresh=false -out=tfplan.binary; then
-            terraform show -json tfplan.binary > tfplan.json
-            echo "✅ Running OPA validation..."
-            opa eval -i tfplan.json -d policy.rego "data.terraform.deny" --fail-defined || echo "⚠️  OPA policy violations found"
-          else
-            echo "⚠️  Terraform plan failed, but continuing..."
-          fi
-
-      - name: ✅ Validate ISO 27017 - Encryption Policy
-        continue-on-error: true
-        run: |
-          echo "🔍 Validando política de Criptografia..."
-          cd "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-criptografia"
-          terraform init -backend=false
-          
-          # Always try to run plan and OPA validation
-          if terraform plan -refresh=false -out=tfplan.binary; then
-            terraform show -json tfplan.binary > tfplan.json
-            echo "✅ Running OPA validation..."
-            opa eval -i tfplan.json -d policy.rego "data.terraform.deny" --fail-defined || echo "⚠️  OPA policy violations found"
-          else
-            echo "⚠️  Terraform plan failed, but continuing..."
-          fi
-
-      - name: ✅ Validate ISO 27017 - Network Segregation
-        continue-on-error: true
-        run: |
-          echo "🔍 Validando política de Segregação..."
-          cd "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27017-segregacao"
-          terraform init -backend=false
-          
-          # Always try to run plan and OPA validation
-          if terraform plan -refresh=false -out=tfplan.binary; then
-            terraform show -json tfplan.binary > tfplan.json
-            echo "✅ Running OPA validation..."
-            opa eval -i tfplan.json -d policy.rego "data.terraform.deny" --fail-defined || echo "⚠️  OPA policy violations found"
-          else
-            echo "⚠️  Terraform plan failed, but continuing..."
-          fi
-
-      - name: ✅ Validate ISO 27018 - Audit Policy
-        continue-on-error: true
-        run: |
-          echo "🔍 Validando política de Auditoria..."
-          cd "exemplos/5 - exemplos iso-27017 - iso-27018/iso-27018-auditoria"
-          terraform init -backend=false
-          
-          # Always try to run plan and OPA validation
-          if terraform plan -refresh=false -out=tfplan.binary; then
-            terraform show -json tfplan.binary > tfplan.json
-            echo "✅ Running OPA validation..."
-            opa eval -i tfplan.json -d policy.rego "data.terraform.deny" --fail-defined || echo "⚠️  OPA policy violations found"
-          else
-            echo "⚠️  Terraform plan failed, but continuing..."
-          fi
+          base="exemplos/5 - exemplos iso-27017 - iso-27018"
+          for dir in "$base"/*/; do
+            [ -f "$dir/policy.rego" ] || continue
+            echo ""
+            echo "=========================================="
+            echo "🔍 Validando: $dir"
+            echo "=========================================="
+            (
+              cd "$dir"
+              # Pacote Rego varia por política (ex: terraform.backup_compliance)
+              pkg=$(sed -n 's/^package[[:space:]]*//p' policy.rego | head -1)
+              terraform init -backend=false
+              if terraform plan -refresh=false -out=tfplan.binary; then
+                terraform show -json tfplan.binary > tfplan.json
+                echo "✅ Running OPA validation (data.${pkg}.deny)..."
+                violations=$(opa eval -i tfplan.json -d policy.rego "data.${pkg}.deny" --format raw)
+                echo "Violations: $violations"
+              else
+                echo "⚠️  Terraform plan failed, but continuing..."
+              fi
+            ) || echo "⚠️  Validation failed for $dir, continuing..."
+          done
 
       - name: 📊 Generate Policy Report
         if: always()
         run: |
           echo "📋 Gerando relatório de compliance..."
-          cat > policy-report.json << 'EOF'
+          cat > policy-report.json << EOF
           {
             "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "policies_tested": [
@@ -359,7 +321,7 @@ jobs:
 
       - name: 📊 Generate Compliance Report
         run: |
-          cat > compliance-report.md << 'EOF'
+          cat > compliance-report.md << EOF
           # 🔒 Relatório de Compliance - ISO 27017/27018
           
           **Data:** $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)
