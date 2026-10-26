@@ -11,7 +11,7 @@ on:
   workflow_dispatch: # Permite execução manual
 
 env:
-  TERRAFORM_VERSION: '1.6.0'
+  TERRAFORM_VERSION: '1.12.2'
   OPA_VERSION: '0.58.0'
   PYTHON_VERSION: '3.11'
 
